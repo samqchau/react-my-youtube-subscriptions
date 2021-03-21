@@ -1,0 +1,23 @@
+.subscriptionRow {
+  display: flex;
+  padding: 10px;
+  border: 1px solid black;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  margin-top: -1px;
+}
+.subscriptionRow:hover {
+  background-color: lightgray;
+}
+.subscriptionRow__thumbnail {
+  border-radius: 50%;
+  height: 35px;
+  width: 35px;
+  margin-right: 10px;
+}
+.subscriptionRow__title {
+  margin: auto;
+  font-size: large;
+  text-align: center;
+}

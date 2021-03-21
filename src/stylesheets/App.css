@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body,
+#root {
+  height: 200%;
+  width: 100%;
+  background: #f1f1f1;
+}
+.app__page {
+  display: flex;
+}

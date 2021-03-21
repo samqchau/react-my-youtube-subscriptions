@@ -1,6 +1,8 @@
-import React, { useRef, useEffect, useCallback, Switch } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
+import './stylesheets/App.css';
 import Header from './components/Header.jsx';
 import { BrowserRouter as Router } from 'react-router-dom';
+import Sidebar from './components/Sidebar.jsx';
 
 const App = () => {
   const CLIENT_ID =
@@ -80,30 +82,35 @@ const App = () => {
         thumbnail.src = item.snippet.thumbnails.default.url;
         let channelName = document.createElement('p');
         channelName.innerText = item.snippet.title;
-        document.body.append(channelId, channelName, thumbnail);
+        //document.body.append(channelId, channelName, thumbnail);
       });
     });
   }
 
   return (
-    <Router>
-      <Switch>
+    <div className='app'>
+      <Router>
         <Header />
-        <button ref={loginButton} onClick={handleAuthClick}>
-          Log In
-        </button>
-        <button ref={logoutButton} onClick={handleLogoutClick}>
-          Log Out
-        </button>
-        <button
-          onClick={() => {
-            console.log(window.gapi.client);
-          }}
-        >
-          Test
-        </button>
-      </Switch>
-    </Router>
+        <div className='app__page'>
+          <Sidebar />
+          <div className='app__main'></div>
+          <button
+            ref={loginButton}
+            onClick={handleAuthClick}
+            style={{ height: '1.5rem' }}
+          >
+            Log In
+          </button>
+          <button
+            ref={logoutButton}
+            onClick={handleLogoutClick}
+            style={{ height: '1.5rem' }}
+          >
+            Log Out
+          </button>
+        </div>
+      </Router>
+    </div>
   );
 };
 
