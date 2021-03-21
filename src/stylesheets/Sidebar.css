@@ -1,9 +1,6 @@
 .sidebar {
   flex: 0.2;
-  background: white;
-}
-.sidebar__section__title {
-  text-align: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  background: rgb(248, 248, 248);
+  max-width: 250px;
+  margin-top: 1px;
 }

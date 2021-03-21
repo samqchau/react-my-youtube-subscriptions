@@ -15,9 +15,11 @@
   height: 35px;
   width: 35px;
   margin-right: 10px;
+  margin-left: 10px;
 }
 .subscriptionRow__title {
   margin: auto;
   font-size: large;
   text-align: center;
+  font-weight: 700;
 }

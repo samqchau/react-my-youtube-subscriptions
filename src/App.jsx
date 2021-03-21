@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './stylesheets/App.css';
 import Header from './components/Header.jsx';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -10,14 +10,15 @@ const App = () => {
   const SCOPES = 'https://www.googleapis.com/auth/youtube.readonly';
   const discoveryUrl =
     'https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest';
-  const defaultChannel = 'techguyweb';
 
   const updateSigninStatus = useCallback((isSignedIn) => {
     if (isSignedIn) {
-      getChannel(defaultChannel);
+      setLoggedIn(true);
     } else {
+      setLoggedIn(false);
     }
   }, []);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const initClient = useCallback(() => {
     window.gapi.client
@@ -59,57 +60,33 @@ const App = () => {
     window.gapi.auth2.getAuthInstance().signOut();
   }
 
-  //Get channel from API
-  function getChannel(channel) {
-    // Example 2: Use gapi.client.request(args) function
-    let request = window.gapi.client.request({
-      method: 'GET',
-      path: '/youtube/v3/subscriptions',
-      params: {
-        part: 'snippet',
-        mine: 'true',
-        maxResults: 3,
-      },
-    });
-
-    // Execute the API request.
-    request.execute(function (response) {
-      console.log(response);
-      response.items.forEach((item) => {
-        let channelId = document.createElement('p');
-        channelId.innerText = item.snippet.channelId;
-        let thumbnail = document.createElement('img');
-        thumbnail.src = item.snippet.thumbnails.default.url;
-        let channelName = document.createElement('p');
-        channelName.innerText = item.snippet.title;
-        //document.body.append(channelId, channelName, thumbnail);
-      });
-    });
-  }
-
   return (
     <div className='app'>
-      <Router>
-        <Header />
-        <div className='app__page'>
-          <Sidebar />
-          <div className='app__main'></div>
-          <button
-            ref={loginButton}
-            onClick={handleAuthClick}
-            style={{ height: '1.5rem' }}
-          >
-            Log In
-          </button>
-          <button
-            ref={logoutButton}
-            onClick={handleLogoutClick}
-            style={{ height: '1.5rem' }}
-          >
-            Log Out
-          </button>
-        </div>
-      </Router>
+      {!loggedIn ? (
+        <button
+          ref={loginButton}
+          onClick={handleAuthClick}
+          style={{ height: '1.5rem' }}
+        >
+          Log In
+        </button>
+      ) : (
+        <Router>
+          <Header />
+          <div className='app__page'>
+            <Sidebar />
+            <div className='app__main'>
+              <button
+                ref={logoutButton}
+                onClick={handleLogoutClick}
+                style={{ height: '1.5rem' }}
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </Router>
+      )}
     </div>
   );
 };

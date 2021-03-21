@@ -6,22 +6,24 @@ const Sidebar = () => {
   const [userSubscriptions, setUserSubscriptions] = useState([]);
   let gapi = window.gapi;
   const fetchUserSubscriptions = useCallback(() => {
-    let request = gapi.client.request({
-      method: 'GET',
-      path: '/youtube/v3/subscriptions',
-      params: {
-        part: 'snippet',
-        mine: 'true',
-        maxResults: 50,
-      },
-    });
-    request.execute((response) => {
-      console.log('sidebarrequest');
-      console.log(response);
-      console.log(response.items);
-      setUserSubscriptions(response.items);
-      console.log(response.nextPageToken);
-    });
+    if (gapi.client) {
+      let request = gapi.client.request({
+        method: 'GET',
+        path: '/youtube/v3/subscriptions',
+        params: {
+          part: 'snippet',
+          mine: 'true',
+          maxResults: 50,
+        },
+      });
+      request.execute((response) => {
+        console.log('sidebarrequest');
+        console.log(response);
+        console.log(response.items);
+        setUserSubscriptions(response.items);
+        console.log(response.nextPageToken);
+      });
+    }
   }, [gapi.client]);
 
   /*
@@ -43,7 +45,6 @@ const Sidebar = () => {
   return (
     <div className='sidebar'>
       <div className='sidebar__section'>
-        <h2 className='sidebar__section__title'>Subscriptions</h2>
         {userSubscriptions.map((subscription, i) => (
           <SubscriptionRow
             key={i}

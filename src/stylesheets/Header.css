@@ -6,8 +6,8 @@
   padding-bottom: 0.5rem;
   position: sticky;
   top: 0;
-  background-color: white;
   z-index: 100;
+  background: rgb(248, 248, 248);
 }
 .header__logo {
   height: 25px;
