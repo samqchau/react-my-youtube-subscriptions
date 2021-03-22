@@ -1,0 +1,16 @@
+.videoCard {
+  display: flex;
+  flex-direction: column;
+}
+.videoCard__image {
+  height: 100px;
+  width: 300px;
+}
+.videoCard__info {
+  display: flex;
+  flex-direction: row;
+}
+.videoCard__info__left {
+}
+.videoCard__info__right {
+}

@@ -1,0 +1,11 @@
+.authenticationScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background-image: url(https://wallpapertag.com/wallpaper/full/6/b/0/287102-full-size-youtube-background-3000x1688-notebook.jpg);
+  background-size: cover;
+  background-position: center;
+  color: white;
+}

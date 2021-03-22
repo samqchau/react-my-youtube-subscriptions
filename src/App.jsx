@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './stylesheets/App.css';
 import Header from './components/Header.jsx';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar.jsx';
+import SubscribedVideosScreen from './screens/SubscribedVideosScreen';
+import SearchScreen from './screens/SearchScreen';
+import AuthenticationScreen from './screens/AuthenticationScreen.jsx';
 
 const App = () => {
   const CLIENT_ID =
@@ -19,6 +22,27 @@ const App = () => {
     }
   }, []);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [userSubscriptions, setUserSubscriptions] = useState([]);
+
+  const fetchUserSubscriptions = useCallback(() => {
+    if (window.gapi.client) {
+      let request = window.gapi.client.request({
+        method: 'GET',
+        path: '/youtube/v3/subscriptions',
+        params: {
+          part: 'snippet',
+          mine: 'true',
+          maxResults: 50,
+        },
+      });
+      request.execute((response) => {
+        console.log(response);
+        console.log(response.items);
+        setUserSubscriptions(response.items);
+        console.log(response.nextPageToken);
+      });
+    }
+  }, []);
 
   const initClient = useCallback(() => {
     window.gapi.client
@@ -36,8 +60,9 @@ const App = () => {
         updateSigninStatus(
           window.gapi.auth2.getAuthInstance().isSignedIn.get()
         );
+        fetchUserSubscriptions();
       });
-  }, [updateSigninStatus]);
+  }, [updateSigninStatus, fetchUserSubscriptions]);
 
   const handleClientLoad = useCallback(() => {
     window.gapi.load('client:auth2', initClient);
@@ -47,13 +72,7 @@ const App = () => {
     handleClientLoad();
   }, [handleClientLoad]);
 
-  const loginButton = useRef();
   const logoutButton = useRef();
-
-  //Handle login
-  function handleAuthClick() {
-    window.gapi.auth2.getAuthInstance().signIn();
-  }
 
   //Handle logout
   function handleLogoutClick() {
@@ -63,19 +82,23 @@ const App = () => {
   return (
     <div className='app'>
       {!loggedIn ? (
-        <button
-          ref={loginButton}
-          onClick={handleAuthClick}
-          style={{ height: '1.5rem' }}
-        >
-          Log In
-        </button>
+        <AuthenticationScreen />
       ) : (
         <Router>
           <Header />
           <div className='app__page'>
-            <Sidebar />
+            <Sidebar subscriptions={userSubscriptions} />
             <div className='app__main'>
+              <Route path='/search/:keyword' component={SearchScreen} exact />
+              <Route
+                path='/'
+                render={(props) => (
+                  <SubscribedVideosScreen
+                    {...props}
+                    subscriptions={userSubscriptions}
+                  />
+                )}
+              />
               <button
                 ref={logoutButton}
                 onClick={handleLogoutClick}
