@@ -1,33 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useReducer,
+} from 'react';
 import VideoCard from '../components/VideoCard.jsx';
 
 const SubscribedVideosScreen = ({ subscriptions }) => {
-  const [latestVideos, setLatestVideos] = useState([
-    {
-      channelTitle: 'Daily Dose of Internet',
-      videoTitle: 'Hello Everyone',
-      videoDescription: 'This is your daily dose of internet',
-      videoId: '1234564',
-      publishedAt: 'march 5th',
-      thumbnail: 'lheh',
-    },
-  ]);
-  function fetchChannelUploadedPlaylist(channelId) {
-    let request = window.gapi.client.request({
-      method: 'GET',
-      path: '/youtube/v3/channels',
-      params: {
-        part: 'contentDetails',
-        id: channelId,
-        maxResults: 1,
-      },
-    });
-    request.execute(getChannelVideos);
+  const [latestVideos, setLatestVideos] = useState([]);
+  let myArr = useRef([]);
+  const [, setState] = useState();
+  function forceUpdate() {
+    setState({});
   }
-
-  //gets a single channels uploaded recently playlist items
-  function getChannelVideos(playlists) {
-    let playlistId = playlists.items[0].contentDetails.relatedPlaylists.uploads;
+  //takes a single playlist's Id and makes a request to get the playlist's items
+  const getChannelVideos = useCallback((playlistId) => {
     window.gapi.client
       .request({
         method: 'GET',
@@ -38,12 +26,37 @@ const SubscribedVideosScreen = ({ subscriptions }) => {
           playlistId: playlistId,
         },
       })
-      .exec(mergeSortVideos);
-  }
+      .execute((channelVideos) => {
+        mergeSortVideos(channelVideos);
+      });
+  }, []);
 
+  //Takes channelId and makes a request that returns channel's data, we access playlists
+
+  const fetchChannelUploadedPlaylist = useCallback(
+    (channelId) => {
+      let request = window.gapi.client.request({
+        method: 'GET',
+        path: '/youtube/v3/channels',
+        params: {
+          part: 'contentDetails',
+          id: channelId,
+          maxResults: 1,
+        },
+      });
+      request.execute((playlists) => {
+        let playlistId =
+          playlists.items[0].contentDetails.relatedPlaylists.uploads;
+        getChannelVideos(playlistId);
+      });
+    },
+    [getChannelVideos]
+  );
+
+  //takes an array of videos and puts video info into array
   function mergeSortVideos(channelVideos) {
     let videos = channelVideos.items;
-    videos.forEach((video, i) => {
+    let newVideoCollection = videos.map((video) => {
       let vi = video.snippet;
       let videoInfo = {
         channelTitle: vi.channelTitle,
@@ -53,15 +66,12 @@ const SubscribedVideosScreen = ({ subscriptions }) => {
         publishedAt: vi.publishedAt,
         thumbnail: vi.thumbnails.default.url,
       };
-      setLatestVideos(latestVideos.push(videoInfo));
-      if (i === videos.length - 1) {
-        latestVideos.sort((a, b) => {
-          return new Date(b.publishedAt) - new Date(a.publishedAt);
-        });
-      }
+      myArr.current.push(videoInfo);
+      return videoInfo;
     });
   }
 
+  /*
   useEffect(() => {
     if (subscriptions) {
       subscriptions.forEach((subscription) => {
@@ -70,10 +80,27 @@ const SubscribedVideosScreen = ({ subscriptions }) => {
       });
     }
   }, []);
+  */
 
+  const handleTestClick = () => {
+    subscriptions.forEach((subscription) => {
+      fetchChannelUploadedPlaylist(subscription.snippet.resourceId.channelId);
+    });
+    setLatestVideos(myArr.current);
+  };
+  /*
+  useEffect(() => {
+    subscriptions.forEach((subscription) => {
+      fetchChannelUploadedPlaylist(subscription.snippet.resourceId.channelId);
+    });
+    setLatestVideos(myArr.current);
+    setTimeout(forceUpdate, 300);
+  }, [subscriptions, fetchChannelUploadedPlaylist]);
+* */
   return (
     <div className='subscribedVideosScreen'>
       <h2>Recent Uploads -- Subscriptions</h2>
+      <button onClick={handleTestClick}>SubscribedVideosScreenTest</button>
       {latestVideos.map((video) => (
         <VideoCard
           key={video.videoId}

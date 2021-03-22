@@ -36,10 +36,7 @@ const App = () => {
         },
       });
       request.execute((response) => {
-        console.log(response);
-        console.log(response.items);
         setUserSubscriptions(response.items);
-        console.log(response.nextPageToken);
       });
     }
   }, []);
