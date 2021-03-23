@@ -1,10 +1,10 @@
 .videoCard {
   display: flex;
   flex-direction: column;
+  width: 240px;
 }
 .videoCard__image {
-  height: 100px;
-  width: 300px;
+  height: 138px;
 }
 .videoCard__info {
   display: flex;

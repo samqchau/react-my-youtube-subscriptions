@@ -9,8 +9,10 @@ const VideoCard = ({
   videoId,
   publishedAt,
   thumbnail,
-  channelThumbnail = '',
+  channelThumbnail,
+  statistics,
 }) => {
+  //statistics.viewCount ,likeCount, dislikeCount, favoriteCount, commentCount
   return (
     <div className='videoCard'>
       <img className='videoCard__image' src={thumbnail} alt={videoTitle} />
@@ -19,9 +21,12 @@ const VideoCard = ({
           <Avatar src={channelThumbnail} />
         </div>
         <div className='videoCard__info__right'>
+          <p>{channelTitle}</p>
           <h2>{videoTitle}</h2>
           <p>{publishedAt}</p>
           <p>{videoDescription}</p>
+          <p>{videoId}</p>
+          <p>{statistics.viewCount}</p>
         </div>
       </div>
     </div>
