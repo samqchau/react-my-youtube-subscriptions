@@ -20,6 +20,7 @@ const VideoCard = ({
         </div>
         <div className='videoCard__info__right'>
           <h2>{videoTitle}</h2>
+          <p>{publishedAt}</p>
           <p>{videoDescription}</p>
         </div>
       </div>

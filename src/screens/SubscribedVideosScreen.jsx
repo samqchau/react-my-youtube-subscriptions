@@ -1,40 +1,14 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useReducer,
-} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import VideoCard from '../components/VideoCard.jsx';
 
 const SubscribedVideosScreen = ({ subscriptions }) => {
   const [latestVideos, setLatestVideos] = useState([]);
   let myArr = useRef([]);
-  const [, setState] = useState();
-  function forceUpdate() {
-    setState({});
-  }
-  //takes a single playlist's Id and makes a request to get the playlist's items
-  const getChannelVideos = useCallback((playlistId) => {
-    window.gapi.client
-      .request({
-        method: 'GET',
-        path: '/youtube/v3/playlistItems',
-        params: {
-          part: 'snippet',
-          maxResults: 10,
-          playlistId: playlistId,
-        },
-      })
-      .execute((channelVideos) => {
-        mergeSortVideos(channelVideos);
-      });
-  }, []);
 
-  //Takes channelId and makes a request that returns channel's data, we access playlists
-
-  const fetchChannelUploadedPlaylist = useCallback(
-    (channelId) => {
+  useEffect(() => {
+    let batchedRequests = window.gapi.client.newBatch();
+    subscriptions.forEach((subscription) => {
+      let channelId = subscription.snippet.resourceId.channelId;
       let request = window.gapi.client.request({
         method: 'GET',
         path: '/youtube/v3/channels',
@@ -44,63 +18,50 @@ const SubscribedVideosScreen = ({ subscriptions }) => {
           maxResults: 1,
         },
       });
-      request.execute((playlists) => {
+      batchedRequests.add(request);
+    });
+    batchedRequests.execute((response) => {
+      let nextBatch = window.gapi.client.newBatch();
+      for (let key in response) {
         let playlistId =
-          playlists.items[0].contentDetails.relatedPlaylists.uploads;
-        getChannelVideos(playlistId);
+          response[key].result.items[0].contentDetails.relatedPlaylists.uploads;
+        let playlistItemsRequest = window.gapi.client.request({
+          method: 'GET',
+          path: '/youtube/v3/playlistItems',
+          params: {
+            part: 'snippet',
+            maxResults: 10,
+            playlistId: playlistId,
+          },
+        });
+        nextBatch.add(playlistItemsRequest);
+      }
+      nextBatch.execute((res) => {
+        for (let key in res) {
+          let videos = res[key].result.items.map((item) => {
+            let snippet = item.snippet;
+            return {
+              channelTitle: snippet.channelId,
+              videoTitle: snippet.title,
+              videoDescription: snippet.description,
+              videoId: snippet.resourceId.videoId,
+              publishedAt: snippet.publishedAt,
+              thumbnail: snippet.thumbnails.default.url,
+            };
+          });
+          myArr.current = myArr.current.concat(videos);
+        }
+        myArr.current.sort((a, b) => {
+          return new Date(b.publishedAt) - new Date(a.publishedAt);
+        });
+        setLatestVideos(myArr.current);
       });
-    },
-    [getChannelVideos]
-  );
-
-  //takes an array of videos and puts video info into array
-  function mergeSortVideos(channelVideos) {
-    let videos = channelVideos.items;
-    let newVideoCollection = videos.map((video) => {
-      let vi = video.snippet;
-      let videoInfo = {
-        channelTitle: vi.channelTitle,
-        videoTitle: vi.title,
-        videoDescription: vi.description,
-        videoId: vi.resourceId.videoId,
-        publishedAt: vi.publishedAt,
-        thumbnail: vi.thumbnails.default.url,
-      };
-      myArr.current.push(videoInfo);
-      return videoInfo;
     });
-  }
+  }, [subscriptions]);
 
-  /*
-  useEffect(() => {
-    if (subscriptions) {
-      subscriptions.forEach((subscription) => {
-        let channelId = subscription.snippet.resourceId.channelId;
-        fetchChannelUploadedPlaylist(channelId);
-      });
-    }
-  }, []);
-  */
-
-  const handleTestClick = () => {
-    subscriptions.forEach((subscription) => {
-      fetchChannelUploadedPlaylist(subscription.snippet.resourceId.channelId);
-    });
-    setLatestVideos(myArr.current);
-  };
-  /*
-  useEffect(() => {
-    subscriptions.forEach((subscription) => {
-      fetchChannelUploadedPlaylist(subscription.snippet.resourceId.channelId);
-    });
-    setLatestVideos(myArr.current);
-    setTimeout(forceUpdate, 300);
-  }, [subscriptions, fetchChannelUploadedPlaylist]);
-* */
   return (
     <div className='subscribedVideosScreen'>
       <h2>Recent Uploads -- Subscriptions</h2>
-      <button onClick={handleTestClick}>SubscribedVideosScreenTest</button>
       {latestVideos.map((video) => (
         <VideoCard
           key={video.videoId}
